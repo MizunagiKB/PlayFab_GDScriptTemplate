@@ -1,7 +1,7 @@
 # PlayFab_GDScriptTemplate README
 > PlayFabSDK for GDScript / SDKGenerator Template
 
-This is the template file for generating the PlayFabSDK for GDScript.
+This is the template file for generating the PlayFabSDK for GDScript. <br />
 To generate PlayFabSDK, follow the steps below.
 
 ## Example of manual generation
