@@ -1,0 +1,54 @@
+extends Node
+
+
+# -------------------------------------------------------------------- enum(s)
+# ------------------------------------------------------------------- const(s)
+# --------------------------------------------------------------------- var(s)
+# ------------------------------------------------------------------ signal(s)
+# -------------------------------------------------------------- innerclass(s)
+# -------------------------------------------------------------------- func(s)
+<% if (hasClientOptions) { %>
+static func IsClientLoggedIn():
+    return bool(PlayFabSettings._internalSettings.ClientSessionTicket)
+<% } %>
+<% for(var i in api.calls) { var apiCall=api.calls[i]; %>
+static func <%- apiCall.name %>(dict_request, user_callback = null, dict_header_extra = {}):
+<%- generateApiSummary("    ", apiCall, "summary", "https://docs.microsoft.com/rest/api/playfab/" + api.name.toLowerCase() + "/" + apiCall.subgroup.toLowerCase().replaceAll(" ","-") + "/" + apiCall.name.toLowerCase()) %>
+<% if (apiCall.url === "/Authentication/GetEntityToken") { %>
+    var list_prologue_work = []
+
+    if PlayFabSettings._internalSettings.EntityToken:
+        list_prologue_work = [
+            PlayFab.E_PRO.CHK_ENTITY_TOKEN,
+            PlayFab.E_PRO.USE_AUTH_ENTITY_TOKEN
+        ]
+    elif PlayFabSettings.DeveloperSecretKey:
+        list_prologue_work = [
+            PlayFab.E_PRO.CHK_SECRET_KEY,
+            PlayFab.E_PRO.USE_AUTH_SECRET_KEY
+        ]
+    elif PlayFabSettings._internalSettings.ClientSessionTicket:
+        list_prologue_work = [
+            PlayFab.E_PRO.CHK_SESSION_TICKET,
+            PlayFab.E_PRO.USE_AUTH_AUTHORIZATION
+        ]
+
+    return PlayFab._http_cli.request_append(
+        "<%- apiCall.url %>",
+        dict_request,
+        user_callback,
+        dict_header_extra,
+        list_prologue_work,
+        <%- getResultActions(apiCall, api) %>
+    )
+<% } else { %>
+    return PlayFab._http_cli.request_append(
+        "<%- apiCall.url %>",
+        dict_request,
+        user_callback,
+        dict_header_extra,
+        <%- getRequestActions(apiCall) %>,
+        <%- getResultActions(apiCall, api) %>
+    )
+<% } %>
+<% } %>
