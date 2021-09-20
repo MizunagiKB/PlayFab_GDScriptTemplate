@@ -10,7 +10,7 @@ To generate PlayFabSDK, follow the steps below.
 mkdir PlayFab_GDScriptSdk
 # 2)
 git clone https://github.com/PlayFab/SDKGenerator
-cd SDKGenerator/privateTemplate
+cd SDKGenerator/privateTemplates
 git clone https://github.com/MizunagiKB/PlayFab_GDScriptTemplate gdscriptsdk
 cd ..
 # 3) Generate PlayFabSDK #1
