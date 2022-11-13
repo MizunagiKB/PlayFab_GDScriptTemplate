@@ -1,0 +1,122 @@
+extends Object
+# class_name <%- replaceReservedWord(api.name) %>DataModels
+
+<%
+function init_property(list_property) {
+    let list_result = [""];
+
+    for(let i in list_property) {
+        let property = list_property[i]
+        if (false) {
+        } else if (property.collection === "array") {
+            list_result.push("    self." + property.name + " = []");
+        } else if (property.collection === "map") {
+            list_result.push("    self." + property.name + " = {}");
+        } else if (property.isclass) {
+            list_result.push("    self." + property.name + " = " + replaceReservedWord(property.actualtype) + ".new()");
+        }
+    }
+
+    if (list_result.length === 0) list_result.push("none")
+
+    return list_result.join("\n    ")
+}
+
+function get_dict_property(list_property) {
+    let list_result = [""];
+
+    list_result.push("var dict_result: Dictionary = {}")
+    list_result.push("")
+
+    for(let i in list_property) {
+        let property = list_property[i]
+
+        list_result.push("if self." + property.name + " != null:");
+
+        if (false) {
+        } else if (property.collection === "array") {
+            list_result.push("    var list_temp: Array = []");
+            list_result.push("    for v in self." + property.name + ":");
+            list_result.push("        list_temp.push_back(v)");
+            list_result.push("    dict_result[\"" + property.name + "\"] = list_temp");
+        } else if (property.collection === "map") {
+            list_result.push("    var dict_temp: Dictionary = {}");
+            list_result.push("    for k in self." + property.name + ":");
+            list_result.push("        dict_temp[k] = self." + property.name + "[k]");
+            list_result.push("    dict_result[\"" + property.name + "\"] = dict_temp");
+        } else if (property.isclass) {
+            list_result.push("    dict_result[\"" + property.name + "\"] = self." + property.name + ".get_dict()");
+        } else {
+            list_result.push("    dict_result[\"" + property.name + "\"] = self." + property.name);
+        }
+    }
+
+    list_result.push("")
+    list_result.push("return dict_result")
+
+    return list_result.join("\n        ")
+}
+
+function set_dict_property(list_property) {
+    let list_result = [""];
+
+    for(let i in list_property) {
+        let property = list_property[i]
+
+        list_result.push("if \"" + property.name + "\" in dict_param:")
+
+        if (property.isclass) {
+            list_result.push("    self." + property.name + " = " + replaceReservedWord(property.actualtype) + ".new(dict_param[\"" + property.name + "\"])");
+        } else if (property.collection === "array") {
+            list_result.push("    self." + property.name + " = []");
+            list_result.push("    for v in dict_param[\"" + property.name + "\"]:");
+            if (property.isclass){
+                list_result.push("        self." + property.name + ".push_back(" + replaceReservedWord(property.actualtype) + ".new(v))");
+            } else {
+                list_result.push("        self." + property.name + ".push_back(v)");
+            }
+        } else if (property.collection === "map") {
+            list_result.push("    self." + property.name + " = {}");
+            list_result.push("    for k in dict_param[\"" + property.name + "\"]:");
+            if (property.isclass){
+                list_result.push("        self." + property.name + "[k] = " + replaceReservedWord(property.actualtype) + ".new(dict_param[\"CustomTags\"][k])");
+            } else {
+                list_result.push("        self." + property.name + "[k] = dict_param[\"CustomTags\"][k]");
+            }
+        } else {
+            list_result.push("    self." + property.name + " = dict_param[\"" + property.name + "\"]");
+        }
+    }
+
+    if (list_result.length === 1) list_result.push("pass")
+
+    return list_result.join("\n        ")
+}
+-%>
+<% for(var i in api.datatypes) { var datatype = api.datatypes[i]; if (datatype.isenum) { %>
+class <%- replaceReservedWord(datatype.name) %>: # enum
+<% for(var i in datatype.enumvalues) { var enumval = datatype.enumvalues[i] -%>
+    const <%- enumval.name %> := "<%- enumval.name %>"
+<% } -%>
+<% } else { %>
+class <%- replaceReservedWord(datatype.name) %>:
+<% for(var i in datatype.properties) { var property = datatype.properties[i] -%>
+<% if (property.collection === "array") { -%>
+    var <%- property.name %> # Array[<%- replaceReservedWord(property.actualtype) %>]
+<% } else if (property.collection === "map") { -%>
+    var <%- property.name %> # Dictionary[String, <%- replaceReservedWord(property.actualtype) %>]
+<% } else { -%>
+    var <%- property.name %><%- getPropertyType(property, datatype) %>
+<% } -%>
+<% } %>
+    func _init(dict_param: Dictionary = {}):
+        <%- init_property(datatype.properties) %>
+        self.set_dict(dict_param);
+
+    func set_dict(dict_param: Dictionary):
+        <%- set_dict_property(datatype.properties) %>
+
+    func get_dict() -> Dictionary:
+        <%- get_dict_property(datatype.properties) %>
+
+<% } } %>
