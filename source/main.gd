@@ -15,8 +15,6 @@ func _request_LoginWithPlayFab_completed(h_request: int, response_code: int, hea
 
     if json_parse_result.error == OK:
         if json_parse_result.result.code == 200:
-            var playfab_result_code = json_parse_result.result.code
-            var playfab_result_status = json_parse_result.result.status
             var res := PlayFab.ClientDataModels.PFLoginResult.new(json_parse_result.result.data)
         else:
             var res := PlayFab.ErrorDataModels.PFApiErrorWrapper.new(json_parse_result.result)
@@ -72,29 +70,14 @@ func _on_btn_register_pressed():
 
 
 func _on_btn_login_pressed():
-    var dict_request = {
-        "TitleId": PlayFabSettings.TitleId,
-        "Username": $ui/lbl_username/value.text,
-        "Password": $ui/lbl_password/value.text
-    }
-
-    # Type hint
-    var o1 := PlayFab.ClientDataModels.PFLoginWithPlayFabRequest.new()
-
-    # To dictionary    
-    var dict_datamodel = o1.get_dict()
-
-    # From dictionary #1
-    var o2 := PlayFab.ClientDataModels.PFLoginWithPlayFabRequest.new(dict_datamodel)
-    # From dictionary #2
-    o2.set_dict(dict_datamodel)
-
-    print(o1.get_dict())
-    print(o2.get_dict())
+    var o_request := PlayFab.ClientDataModels.PFLoginWithPlayFabRequest.new()
+    o_request.TitleId = PlayFabSettings.TitleId
+    o_request.Username = $ui/lbl_username/value.text
+    o_request.Password = $ui/lbl_password/value.text
 
     reset_ui()
     PlayFab.Client.LoginWithPlayFab(
-        dict_request,
+        o_request.get_dict(),
         funcref(self, "_request_LoginWithPlayFab_completed")
     )
 
