@@ -114,7 +114,8 @@ function makeDataModel(apis, sourceDir, apiOutputDir) {
 
         var locals = {
             api: api,
-            replaceReservedWord: replaceReservedWord,
+            replaceReservedWordName: replaceReservedWordName,
+            replaceReservedWordActualType: replaceReservedWordActualType,
             getPropertyType: getPropertyType
         };
 
@@ -124,7 +125,16 @@ function makeDataModel(apis, sourceDir, apiOutputDir) {
 }
 
 
-function replaceReservedWord(word) {
+function replaceReservedWordName(word) {
+    if (word === "OS") {
+        return "OperatingSystem";
+    } else {
+        return word;
+    }
+}
+
+
+function replaceReservedWordActualType(word) {
     return "PF" + word;
 }
 
@@ -132,25 +142,25 @@ function replaceReservedWord(word) {
 function getPropertyType(property, datatype) {
 
     if (property.actualtype === "Boolean")
-        return ": bool";
+        return "bool";
     else if (property.actualtype === "DateTime")
-        return " # DateTime";
+        return "String";
     else if (property.actualtype === "double")
-        return ": float # " + property.actualtype;
+        return "float"; // property.actualtype;
     else if (property.actualtype === "float")
-        return ": float # " + property.actualtype;
+        return "float"; // property.actualtype;
     else if (property.actualtype === "int32")
-        return ": int # " + property.actualtype;
+        return "int"; // property.actualtype;
     else if (property.actualtype === "uint32")
-        return ": int # " + property.actualtype;
+        return "int"; // property.actualtype;
     else if (property.actualtype === "object")
-        return " # object";
+        return "Dictionary";
     else if (property.actualtype === "String")
-        return ": String";
+        return "String"; // property.actualtype;
     else if (property.isclass)
-        return ": " + replaceReservedWord(property.actualtype);
+        return replaceReservedWordActualType(property.actualtype);
     else if (property.isenum)
-        return ": String # " + property.actualtype;
+        return "String"; // property.actualtype;
 
     throw " # Unknown property type: " + property.actualtype + " for " + property.name + " in " + datatype.name;
 }
