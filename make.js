@@ -125,11 +125,7 @@ function makeDataModel(apis, sourceDir, apiOutputDir) {
 
 
 function replaceReservedWord(word) {
-    if (word === "Image") {
-        return "PF" + word;
-    } else {
-        return word;
-    }
+    return "PF" + word;
 }
 
 
