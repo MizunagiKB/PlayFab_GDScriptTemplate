@@ -1,5 +1,6 @@
 var path = require("path");
 
+
 if (typeof (getCompiledTemplate) === "undefined") getCompiledTemplate = function () { };
 if (typeof (templatizeTree) === "undefined") templatizeTree = function () { };
 
@@ -101,5 +102,65 @@ exports.makeCombinedAPI = function (apis, sourceDir, apiOutputDir) {
         }
     }
 
+    makeDataModel(apis, sourceDir, apiOutputDir);
+
     templatizeTree(locals, path.resolve(sourceDir, "source"), apiOutputDir);
+}
+
+
+function makeDataModel(apis, sourceDir, apiOutputDir) {
+    for (var a = 0; a < apis.length; a++) {
+        var api = apis[a];
+
+        var locals = {
+            api: api,
+            replaceReservedWordName: replaceReservedWordName,
+            replaceReservedWordActualType: replaceReservedWordActualType,
+            getPropertyType: getPropertyType
+        };
+
+        var modelTemplate = getCompiledTemplate(path.resolve(sourceDir, "templates/Model.gd.ejs"));
+        writeFile(path.resolve(apiOutputDir, "PlayFabSDK/DataModel/PlayFabAPI_DataModel_" + api.name + ".gd"), modelTemplate(locals));
+    }
+}
+
+
+function replaceReservedWordName(word) {
+    if (word === "OS") {
+        return "OperatingSystem";
+    } else {
+        return word;
+    }
+}
+
+
+function replaceReservedWordActualType(word) {
+    return "PF" + word;
+}
+
+
+function getPropertyType(property, datatype) {
+
+    if (property.actualtype === "Boolean")
+        return "bool";
+    else if (property.actualtype === "DateTime")
+        return "String";
+    else if (property.actualtype === "double")
+        return "float"; // property.actualtype;
+    else if (property.actualtype === "float")
+        return "float"; // property.actualtype;
+    else if (property.actualtype === "int32")
+        return "int"; // property.actualtype;
+    else if (property.actualtype === "uint32")
+        return "int"; // property.actualtype;
+    else if (property.actualtype === "object")
+        return "Dictionary";
+    else if (property.actualtype === "String")
+        return "String"; // property.actualtype;
+    else if (property.isclass)
+        return replaceReservedWordActualType(property.actualtype);
+    else if (property.isenum)
+        return "String"; // property.actualtype;
+
+    throw " # Unknown property type: " + property.actualtype + " for " + property.name + " in " + datatype.name;
 }
