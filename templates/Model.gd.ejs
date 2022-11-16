@@ -35,17 +35,46 @@ function get_dict_property(list_property) {
 
         if (false) {
         } else if (property.collection === "array") {
-            list_result.push("    var list_temp: Array = []");
-            list_result.push("    for v in self." + property.name + ":");
-            list_result.push("        list_temp.push_back(v)");
-            list_result.push("    dict_result[\"" + property.name + "\"] = list_temp");
+            list_result.push("    if self." + property.name + ".size() > 0:");
+            list_result.push("        var list_temp: Array = []");
+            list_result.push("        for v in self." + property.name + ":");
+
+            if (property.actualtype === "String" ) {
+                list_result.push("            # Array[String]");
+                list_result.push("            if v.empty() != true:");
+                list_result.push("                list_temp.push_back(v)");
+            } else if (property.isclass) {
+                list_result.push("            list_temp.push_back(v.get_dict())");
+            } else {
+                list_result.push("            list_temp.push_back(v)");
+            }
+
+            list_result.push("        dict_result[\"" + property.name + "\"] = list_temp");
+
         } else if (property.collection === "map") {
-            list_result.push("    var dict_temp: Dictionary = {}");
-            list_result.push("    for k in self." + property.name + ":");
-            list_result.push("        dict_temp[k] = self." + property.name + "[k]");
-            list_result.push("    dict_result[\"" + property.name + "\"] = dict_temp");
+            list_result.push("    if self." + property.name + ".size() > 0:");
+            list_result.push("        var dict_temp: Dictionary = {}");
+            list_result.push("        for k in self." + property.name + ":");
+
+            if (property.actualtype === "String" ) {
+                list_result.push("            # Dictionary[String, String]");
+                list_result.push("            if self." + property.name + "[k].empty() != true:");
+                list_result.push("                dict_temp[k] = self." + property.name + "[k]");
+            } else if (property.isclass) {
+                list_result.push("            dict_temp[k] = self." + property.name + "[k].get_dict()");
+            } else {
+                list_result.push("            dict_temp[k] = self." + property.name + "[k]");
+            }
+
+            list_result.push("        dict_result[\"" + property.name + "\"] = dict_temp");
+
         } else if (property.isclass) {
             list_result.push("    dict_result[\"" + property.name + "\"] = self." + property.name + ".get_dict()");
+
+        } else if (property.actualtype == "String" ) {
+            list_result.push("    if self." + property.name + ".empty() != true:");
+            list_result.push("        dict_result[\"" + property.name + "\"] = self." + property.name);
+
         } else {
             list_result.push("    dict_result[\"" + property.name + "\"] = self." + property.name);
         }
@@ -65,9 +94,7 @@ function set_dict_property(list_property) {
 
         list_result.push("if \"" + property.name + "\" in dict_param:")
 
-        if (property.isclass) {
-            list_result.push("    self." + property.name + " = " + replaceReservedWord(property.actualtype) + ".new(dict_param[\"" + property.name + "\"])");
-        } else if (property.collection === "array") {
+        if (property.collection === "array") {
             list_result.push("    self." + property.name + " = []");
             list_result.push("    for v in dict_param[\"" + property.name + "\"]:");
             if (property.isclass){
@@ -83,6 +110,8 @@ function set_dict_property(list_property) {
             } else {
                 list_result.push("        self." + property.name + "[k] = dict_param[\"CustomTags\"][k]");
             }
+        } else if (property.isclass) {
+            list_result.push("    self." + property.name + " = " + replaceReservedWord(property.actualtype) + ".new(dict_param[\"" + property.name + "\"])");
         } else {
             list_result.push("    self." + property.name + " = dict_param[\"" + property.name + "\"]");
         }

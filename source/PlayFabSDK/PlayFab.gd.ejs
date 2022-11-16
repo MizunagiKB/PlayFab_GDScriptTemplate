@@ -25,6 +25,8 @@ enum E_EPI {
 const <%- api.name %> = preload("res://PlayFabSDK/PlayFabAPI_<%- api.name %>.gd")<% } %>
 <% for (var a = 0; a < apis.length; a++) { var api = apis[a]; %>
 const <%- api.name %>DataModels = preload("res://PlayFabSDK/DataModel/PlayFabAPI_DataModel_<%- api.name %>.gd")<% } %>
+const ErrorDataModels = preload("res://PlayFabSDK/DataModel/PlayFabAPI_DataModel_Error.gd")
+
 
 # --------------------------------------------------------------------- var(s)
 var _http_cli: PlayFabHTTPClient = null
