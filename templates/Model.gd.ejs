@@ -148,7 +148,7 @@ class <%- replaceReservedWordActualType(datatype.name) %>:
 <% } %>
     func _init(dict_param: Dictionary = {}):
         <%- init_property(datatype.properties) %>
-        self.set_dict(dict_param);
+        self.set_dict(dict_param)
 
     func set_dict(dict_param: Dictionary):
         <%- set_dict_property(datatype.properties) %>
